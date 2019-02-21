@@ -1,7 +1,8 @@
 GAME = {
     'width': 640,
     'height': 480,
-    'path': '/usr/local/bin'
+    'path': '/usr/local/bin',
+    'executable': 'mame'
 }
 
 SYSTEM = {
