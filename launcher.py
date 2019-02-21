@@ -72,7 +72,7 @@ def take_screenshot():
 def main():
     launch_game()
     insert_coin()
-    time.sleep(2)
+    time.sleep(8)
     take_screenshot()
     exit_game()
 
