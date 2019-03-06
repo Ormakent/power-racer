@@ -9,7 +9,8 @@ def main():
     print(f'car positions: {find_cars_approximate()}')
 
 
-# TODO: separate player's car position from other cars
+# Returns positions of the cars
+# Player's position is first in the return array
 def find_cars_approximate():
     st = time.time()
 
@@ -52,7 +53,7 @@ def find_cars_approximate():
     red_cars_coords = find_clusters(red_pixels)
 
     # convert coordinates to original  resolution
-    no_margin_coords = list(map(lambda x: [x[0] + marginY, x[1] + marginX], blue_cars_coords + red_cars_coords))
+    no_margin_coords = list(map(lambda x: [x[0] + marginY, x[1] + marginX], red_cars_coords + blue_cars_coords))
 
     print(f'time elapsed: {time.time() - st}')
 
@@ -92,6 +93,7 @@ def find_clusters(pos_arr):
 
 
 # finds average coordinates of 2 clusters
+# car with more data points is returned first
 def find_pos_from_clusters(coords, distribution):
     pos1 = [0, 0]
     num1 = 0
@@ -108,7 +110,7 @@ def find_pos_from_clusters(coords, distribution):
         return None
     pos1 = [int(pos1[0] / num1), int(pos1[1] / num1)]
     pos2 = [int(pos2[0] / num2), int(pos2[1] / num2)]
-    return [pos1, pos2]
+    return [pos1, pos2] if num1 >= num2 else [pos2, pos1]
 
 
 if __name__ == "__main__":
