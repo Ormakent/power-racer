@@ -1,6 +1,5 @@
 import os
 import subprocess
-import pyautogui
 import time
 import logging
 import config
@@ -11,6 +10,7 @@ import numpy as np
 import image_scanner
 import evaluate
 import learning
+import gamecontrols as gc
 
 log = logging.getLogger('launcher')
 log.setLevel(logging.DEBUG)
@@ -21,7 +21,7 @@ game_running = False
 
 def launch_game():
     if game_running:
-        restart_game()
+        gc.restart_game()
     else:
         log.debug("Launching game")
         resolution = str(config.GAME['width']) + "x" + str(config.GAME['height'])
@@ -29,40 +29,13 @@ def launch_game():
                            "amspdwy",
                            "-resolution", resolution,
                            "-window",
-                           "-sound", "none"]
+                           "-sound", "none",
+                           "-skip_gameinfo"]
         subprocess.Popen(process_options, cwd=config.GAME['path'])
 
         # wait for game to start up
         log.debug("Waiting for game startup")
         time.sleep(4)
-
-    # skip machine info window
-    log.debug("Skipping info window")
-    for i in range(5):
-        pyautogui.press("w")
-        time.sleep(0.1)
-
-    # wait for screen transition
-    log.debug("Waiting for screen transition")
-    time.sleep(4)
-
-
-def restart_game():
-    pyautogui.press("f3", pause=0.1)
-    time.sleep(0.1)
-    pyautogui.press("f3", pause=0.1)
-
-
-def exit_game():
-    pyautogui.press("esc", pause=0.15)
-    pyautogui.press("esc", pause=0.15)
-
-
-def insert_coin():
-    pyautogui.press("5", pause=0.15)
-    pyautogui.press("5", pause=0.15)
-    pyautogui.press("5", pause=0.15)
-    log.debug("Coin was inserted")
 
 
 def take_screenshot(name=None):
@@ -81,23 +54,6 @@ def take_screenshot(name=None):
         return img
 
 
-def move_car(direction):
-    possible = ['up', 'left', 'right']
-    dirs = {
-        'L': ['left'],
-        'R': ['right'],
-        'F': ['up'],
-        'FR': ['up', 'right'],
-        'FL': ['up', 'left'],
-        'S': None
-    }
-    for move in possible:
-        if dirs[direction] and move in dirs[direction]:
-            pyautogui.keyDown(move)
-        else:
-            pyautogui.keyUp(move)
-
-
 def main():
     launch_game()
     test_img = cv2.resize(cv2.imread('test1.png'), (320, 240))
@@ -107,7 +63,7 @@ def main():
     cv2.waitKey(1)
     while True:
         run_first_map()
-        restart_game()
+        gc.restart_game()
 
 
 def end_cond_met(img, time_start):
@@ -115,7 +71,7 @@ def end_cond_met(img, time_start):
 
 
 def run_first_map():
-    insert_coin()
+    gc.insert_coin()
     # wait until loaded into the game
     time.sleep(8)
     # take screenshot
@@ -142,12 +98,12 @@ def run_first_map():
             evaluate.c_queue.rotate(-1)
             state['wp_crossed'] += 1
         print(state)
-        move_car(learning.do_iteration(state))
+        gc.move_car_in_direction(learning.do_iteration(state))
         draw_state(img, state)
         img = np.array(take_screenshot())
         cur_coords = state['player_pos']
     print("we stop now")
-    move_car('S')
+    gc.move_car_in_direction('S')
     learning.save_q()
     return None
 
